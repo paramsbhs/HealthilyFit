@@ -43,7 +43,7 @@ enum JointName: String, CaseIterable, Hashable {
     }
 }
 
-struct Joint: Identifiable {
+struct Joint: Identifiable, Equatable {
     let name: JointName
     let location: CGPoint
     let confidence: CGFloat

@@ -6,6 +6,7 @@
 //
 
 import CoreData
+import Foundation
 
 struct PersistenceController {
     static let shared = PersistenceController()
@@ -15,8 +16,22 @@ struct PersistenceController {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            let workout = Workout(context: viewContext)
+            workout.id = UUID()
+            workout.date = Date()
+            workout.exerciseType = "squat"
+            workout.totalReps = 12
+            workout.formScore = 0.87
+
+            let set = WorkoutSet(context: viewContext)
+            set.id = UUID()
+            set.completedAt = Date()
+            set.exerciseType = workout.exerciseType
+            set.reps = 12
+            set.targetReps = 12
+            set.formScore = workout.formScore
+            set.workout = workout
+            workout.addToSets(set)
         }
         do {
             try viewContext.save()
@@ -33,8 +48,15 @@ struct PersistenceController {
 
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "FormRecorder")
+        guard let storeDescription = container.persistentStoreDescriptions.first else {
+            fatalError("Missing persistent store description")
+        }
+
+        storeDescription.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+        storeDescription.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+
         if inMemory {
-            container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+            storeDescription.url = URL(fileURLWithPath: "/dev/null")
         }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {

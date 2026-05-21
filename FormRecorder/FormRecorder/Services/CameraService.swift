@@ -105,9 +105,9 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
         DispatchQueue.main.async {
             self.errorMessage = "Camera preview is unavailable in iOS Simulator. Run on a physical iPhone."
         }
-        return
+        isConfigured = false
         #endif
-
+        #if !targetEnvironment(simulator)
         session.beginConfiguration()
         defer { session.commitConfiguration() }
 
@@ -163,6 +163,7 @@ final class CameraService: NSObject, ObservableObject, AVCaptureVideoDataOutputS
                 self.errorMessage = "Failed to configure camera: \(error.localizedDescription)"
             }
         }
+        #endif
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
